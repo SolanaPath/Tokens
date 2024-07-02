@@ -32,18 +32,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
 const fs = __importStar(require("fs"));
-const web3_js_1 = require("@solana/web3.js");
 const secret = JSON.parse(fs.readFileSync('secret.json').toString());
 const secretKey = Uint8Array.from(secret);
-const owenKeyPair = web3_js_1.Keypair.fromSecretKey(Uint8Array.from(secretKey));
+const payer = web3_js_1.Keypair.fromSecretKey(Uint8Array.from(secretKey));
+const tokenAcount = new web3_js_1.PublicKey('6GnXRXixMPt3CmoV79dVnkV17M3ZgurCBynxUwUoRsGv');
 const connection = new web3_js_1.Connection((0, web3_js_1.clusterApiUrl)('testnet'), 'confirmed');
 const mintKey = new web3_js_1.PublicKey('82ZJq9xss5HNoR3uH7arrTqDpkTwSVVcQFBZ3RFQV739');
-// Public key of the mint token generate from the createMint.ts
-const createTokenAccount = (connection, payer, mint, owner) => __awaiter(void 0, void 0, void 0, function* () {
-    const tokenAccount = yield (0, spl_token_1.createAccount)(connection, payer, mint, owner);
-    //Not Providing it with a keyPair already makes it a Associated Token Account means it is associated with the owner and the mint.
-    console.log(tokenAccount);
+const mint = (connection, payer, mint, destination, authority, amount) => __awaiter(void 0, void 0, void 0, function* () {
+    const transactionSignature = yield (0, spl_token_1.mintTo)(connection, payer, mint, destination, authority, amount);
+    console.log(transactionSignature);
 });
-createTokenAccount(connection, owenKeyPair, mintKey, owenKeyPair.publicKey).then(() => console.log('done'));
+mint(connection, payer, mintKey, tokenAcount, payer.publicKey, 100).then(() => console.log('done'));

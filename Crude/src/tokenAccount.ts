@@ -15,6 +15,7 @@ const tokenAccount = await createAccount(
     mint,
     owner,
 );
+//Not Providing it with a keyPair already makes it a Associated Token Account means it is associated with the owner and the mint.
 console.log(tokenAccount);
 }
 

@@ -37,13 +37,19 @@ const fs = __importStar(require("fs"));
 const web3_js_1 = require("@solana/web3.js");
 const secret = JSON.parse(fs.readFileSync('secret.json').toString());
 const secretKey = Uint8Array.from(secret);
-const owenKeyPair = web3_js_1.Keypair.fromSecretKey(Uint8Array.from(secretKey));
+const payer = web3_js_1.Keypair.fromSecretKey(Uint8Array.from(secretKey));
 const connection = new web3_js_1.Connection((0, web3_js_1.clusterApiUrl)('testnet'), 'confirmed');
 const mintKey = new web3_js_1.PublicKey('82ZJq9xss5HNoR3uH7arrTqDpkTwSVVcQFBZ3RFQV739');
-// Public key of the mint token generate from the createMint.ts
-const createTokenAccount = (connection, payer, mint, owner) => __awaiter(void 0, void 0, void 0, function* () {
-    const tokenAccount = yield (0, spl_token_1.createAccount)(connection, payer, mint, owner);
-    //Not Providing it with a keyPair already makes it a Associated Token Account means it is associated with the owner and the mint.
-    console.log(tokenAccount);
+const ownerKey = new web3_js_1.PublicKey('4bCtf9EMjHUFUs8hoyka2Jq2DazpNs18ikqcYNzDozaK');
+const createATA = (connection, payer, mint, owner) => __awaiter(void 0, void 0, void 0, function* () {
+    const associatedTokenAccount = yield (0, spl_token_1.createAssociatedTokenAccount)(connection, payer, mint, owner);
+    console.log(associatedTokenAccount);
 });
-createTokenAccount(connection, owenKeyPair, mintKey, owenKeyPair.publicKey).then(() => console.log('done'));
+const createGetATA = (connection, payer, mint, owner) => __awaiter(void 0, void 0, void 0, function* () {
+    const associatedTokenAccount = yield (0, spl_token_1.getOrCreateAssociatedTokenAccount)(connection, payer, mint, owner);
+    console.log(associatedTokenAccount);
+});
+// Returns an object with the address of the associated token account, owner and mint and some more information.
+createGetATA(connection, payer, mintKey, ownerKey)
+    .then(() => console.log('done'))
+    .catch((error) => console.error('Error:', error));
