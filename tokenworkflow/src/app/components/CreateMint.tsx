@@ -19,7 +19,7 @@ export const CreateMintForm: FC = () => {
     const { publicKey, sendTransaction } = useWallet();
     const link = () => {
         return txSig
-            ? `https://explorer.solana.com/tx/${txSig}?cluster=devnet`
+            ? `https://explorer.solana.com/tx/${txSig}?cluster=testnet`
             : "";
     };
 
@@ -30,7 +30,6 @@ export const CreateMintForm: FC = () => {
         }
 
         const mint = web3.Keypair.generate();
-
         const lamports = await getMinimumBalanceForRentExemptMint(connection);
 
         const mintAccount = new web3.Transaction().add(

@@ -21,7 +21,7 @@ export const MintToForm: FC = () => {
     const { publicKey, sendTransaction } = useWallet();
     const link = () => {
         return txSig
-            ? `https://explorer.solana.com/tx/${txSig}?cluster=devnet`
+            ? `https://explorer.solana.com/tx/${txSig}?cluster=testnet`
             : "";
     };
 
@@ -30,8 +30,26 @@ export const MintToForm: FC = () => {
         if (!connection || !publicKey) {
             return;
         }
-
-        // BUILD AND SEND MINT TRANSACTION HERE
+        const transaction = new web3.Transaction();
+        const mintPubKey = new web3.PublicKey(event.target.mint.value);
+        const recipientPubKey = new web3.PublicKey(event.target.recipient.value);
+        const amount = event.target.amount.value;
+        const associatedToken = await getAssociatedTokenAddress(
+            mintPubKey,
+            recipientPubKey,
+            false,
+            TOKEN_PROGRAM_ID,
+            ASSOCIATED_TOKEN_PROGRAM_ID
+        );
+        transaction.add(
+            createMintToInstruction(mintPubKey, associatedToken, publicKey, amount)
+        );
+        const signature = await sendTransaction(transaction, connection);
+        await connection.confirmTransaction(signature, "confirmed");
+        setTxSig(signature);
+        setTokenAccount(associatedToken.toString());
+        const account = await getAccount(connection, associatedToken);
+        setBalance(account.amount.toString());
     };
 
     return (

@@ -10,7 +10,7 @@ import {
     getAssociatedTokenAddress,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
-    createAssociatedTokenAccountInstruction,
+    createAssociatedTokenAccountInstruction, getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 
 export const CreateTokenAccountForm: FC = () => {
@@ -20,7 +20,7 @@ export const CreateTokenAccountForm: FC = () => {
     const { publicKey, sendTransaction } = useWallet();
     const link = () => {
         return txSig
-            ? `https://explorer.solana.com/tx/${txSig}?cluster=devnet`
+            ? `https://explorer.solana.com/tx/${txSig}?cluster=testnet`
             : "";
     };
 
@@ -29,8 +29,25 @@ export const CreateTokenAccountForm: FC = () => {
         if (!connection || !publicKey) {
             return;
         }
+        const owner = new web3.PublicKey(event.target.owner.value);
+        const mint = new web3.PublicKey(event.target.mint.value);
 
-        // BUILD AND SEND CREATE TOKEN ACCOUNT TRANSACTION HERE
+        const associatedToken = getAssociatedTokenAddressSync(mint, owner, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+
+        const createATA = new web3.Transaction().add(
+            createAssociatedTokenAccountInstruction(
+                publicKey,
+                associatedToken,
+                owner,
+                mint,
+                TOKEN_PROGRAM_ID,
+                ASSOCIATED_TOKEN_PROGRAM_ID
+            )
+        );
+        sendTransaction(createATA,connection).then((sig)=>{
+            setTxSig(sig);
+            setTokenAccount(associatedToken.toString());
+        })
     };
 
     return (
